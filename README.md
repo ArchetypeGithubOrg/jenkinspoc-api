@@ -1,2 +1,2 @@
-# jenkinspoc-api
-Default project description
+# http-source-template
+HTTP Repo Template

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd">
+	<http:listener-config name="http-listener-config" doc:name="HTTP Listener config" doc:id="a117a608-ccad-41f6-95d3-d6a5ad1a54af" >
+		<http:listener-connection host="0.0.0.0" port="${http.port}" />
+	</http:listener-config>
+	<configuration-properties doc:name="Configuration properties" doc:id="7273daae-254a-4399-8bce-d95dfee34780" file="properties/common.yaml" />
+	<configuration doc:name="Configuration" doc:id="ef1bec37-5c96-4c77-b64c-b1d43566cb0d" defaultErrorHandler-ref="global-error-handler" />
+	<apikit:config outboundHeadersMapName="outboundHeadersMapName" httpStatusVarName="httpStatus" doc:name="Router" doc:id="f154f773-0c7c-419d-aecb-068cab0f8f19" name="router-config" api="resource::ba06d704-66be-4897-a691-74df4d96a3ff:jenkinspoc-api:1.0.0:raml:zip:jenkinspoc-api.raml" >
+		<apikit:flow-mappings >
+			<apikit:flow-mapping resource="/" action="get" flow-ref="jenkinspoc-api-main-flow" />
+		</apikit:flow-mappings>
+	</apikit:config>
+</mule>

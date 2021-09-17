@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<error-handler name="global-error-handler" doc:id="46fdea1d-4c96-42f8-adb5-7059721496a9" >
+		<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="3f0ca13d-90b3-44cb-85d2-976e69361dc7" type="APIKIT:BAD_REQUEST, APIKIT:METHOD_NOT_ALLOWED, APIKIT:NOT_ACCEPTABLE, APIKIT:NOT_FOUND, APIKIT:UNSUPPORTED_MEDIA_TYPE" >
+			<ee:transform doc:name="errorDetails" doc:id="0dd42c92-ac1f-4cf4-8470-8c5731866d8f" >
+				<ee:message >
+				</ee:message>
+				<ee:variables >
+					<ee:set-variable variableName="errorDetails" ><![CDATA[%dw 2.0
+output application/json
+---
+if(error.errorType.identifier == "NOT_FOUND") {message: "Not Found", code: 404}
+else if(error.errorType.identifier == "BAD_REQUEST") {message: "Bad Request", code: 400}
+else if(error.errorType.identifier == "METHOD_NOT_ALLOWED") {message: "Method Not Allowed", code: 405}
+else if(error.errorType.identifier == "NOT_ACCEPTABLE") {message: "Not Acceptable", code: 406}
+else if(error.errorType.identifier == "UNSUPPORTED_MEDIA_TYPE") {message: "Unsupported Media Type", code: 415}
+else {message: "Something Went Wrong", code: 500}]]></ee:set-variable>
+				</ee:variables>
+			</ee:transform>
+			<ee:transform doc:name="response" doc:id="6b11243d-ee5d-4744-9135-c4da20589b21" >
+				<ee:message >
+					<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	status: vars.errorDetails.code default 500,
+	payload: {
+		message: vars.errorDetails.message
+	},
+	errors: [{
+		errorMessage: error.description
+	}]
+}]]></ee:set-payload>
+				</ee:message>
+				<ee:variables >
+					<ee:set-variable variableName="httpStatus" ><![CDATA[vars.errorDetails.code default 500]]></ee:set-variable>
+				</ee:variables>
+			</ee:transform>
+			<logger level="INFO" doc:name="End Failure Log" doc:id="e44b355b-a8c2-4fb3-8077-5fe3e14ca029" message='#[output application/json
+&#10;---
+&#10;{
+&#10;	timeStamp: now(),
+&#10;	executionTime: now() - vars.startTime,
+&#10;	logPoint: "END_FAILURE",
+&#10;	flowName: flow.name,
+&#10;	appName: app.name,
+&#10;	message: "Request processing failed - exiting with failure status",
+&#10;	payload: if(isEmpty(payload)) "" else payload
+&#10;}]' />
+		</on-error-propagate>
+		<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="b2526d79-4b17-42c8-b63c-7f4aca5fa91e" type="ANY">
+			<ee:transform doc:name="response" doc:id="3e71ba61-8000-4530-9a77-529a2046d6db" >
+				<ee:message >
+					<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	status: vars.httpStatus default 500,
+	payload: {},
+	errors: [{
+		errorMessage: error.description
+	}]
+}]]></ee:set-payload>
+				</ee:message>
+			</ee:transform>
+			<logger level="INFO" doc:name="End Failure Log" doc:id="edbcfe49-e373-491e-9b9f-f0c555bcf84b" message='#[output application/json
+&#10;---
+&#10;{
+&#10;	timeStamp: now(),
+&#10;	executionTime: now() - vars.startTime,
+&#10;	logPoint: "END_FAILURE",
+&#10;	flowName: flow.name,
+&#10;	appName: app.name,
+&#10;	message: "Request processing failed - exiting with failure status",
+&#10;	payload: if(isEmpty(payload)) "" else payload
+&#10;}]' />
+		</on-error-propagate>
+	</error-handler>
+</mule>

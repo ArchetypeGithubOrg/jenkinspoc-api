@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd">
+	<flow name="api-main" doc:id="0f33f5b5-ce1c-4153-b2dc-3f2f4530f625" >
+		<http:listener doc:name="Listener" doc:id="929acd05-5fd9-424d-9d99-1443cbfc7dfe" config-ref="http-listener-config" path="${http.path}">
+			<http:response statusCode="#[vars.httpStatus default 200]" />
+			<http:error-response statusCode="#[vars.httpStatus default 500]" >
+				<http:body ><![CDATA[#[payload]]]></http:body>
+			</http:error-response>
+		</http:listener>
+		<ee:transform doc:name="Initial Vars" doc:id="70b2c13c-eb88-4872-92b1-a8867a197cb4" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="startTime" ><![CDATA[%dw 2.0
+output application/java
+---
+now()]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<apikit:router doc:name="Router" doc:id="30f07e88-ff9d-4c52-9f34-28b1f3e653b3" config-ref="router-config"/>
+	</flow>
+	<flow name="jenkinspoc-api-main-flow" doc:id="9725006c-dc8e-4dd6-a2f5-f86796e4d470" >
+		<logger level="INFO" doc:name="Start Log" doc:id="f1d8c527-f614-4db3-b1c1-5f978de75ffe" message='#[output application/json
+&#10;---
+&#10;{
+&#10;	timeStamp: now(),
+&#10;	executionTime: now() - vars.startTime,
+&#10;	logPoint: "START",
+&#10;	flowName: flow.name,
+&#10;	appName: app.name,
+&#10;	message: "Request received - Starting main flow execution",
+&#10;	payload: if(isEmpty(payload)) "" else payload
+&#10;}]' />
+		<flow-ref doc:name="Sub Flow" doc:id="7573cd50-60fa-46e2-a08f-2bd0ed554c7f" name="mule-httplistener-archetype-impl-subflow" />
+		<logger level="INFO" doc:name="End Log" doc:id="77787240-7f7b-41bd-8fb6-e3cff9e578a3" message='#[output application/json
+&#10;---
+&#10;{
+&#10;	timeStamp: now(),
+&#10;	executionTime: now() - vars.startTime,
+&#10;	logPoint: "END_SUCCESS",
+&#10;	flowName: flow.name,
+&#10;	appName: app.name,
+&#10;	message: "Request completed successfully - exiting main flow",
+&#10;	payload: if(isEmpty(payload)) "" else payload
+&#10;}]' />
+	</flow>
+</mule>
