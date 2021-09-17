@@ -35,6 +35,7 @@
 				      <username>${cloudhub.username}</username>
 				      <password>${cloudhub.password}</password>
 				      <applicationName>${cloudhub.applicationName}</applicationName>
+				      <businessGroupId>ba06d704-66be-4897-a691-74df4d96a3ff</businessGroupId>
 				      <environment>${cloudhub.env}</environment>
 				      <region>${cloudhub.region}</region>
 				      <workers>${cloudhub.workers}</workers>
